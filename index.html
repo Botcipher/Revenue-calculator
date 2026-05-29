@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--white:#ffffff;--off:#f7f6f4;--black:#0d0d0d;--g1:#1a1a1a;--g2:#333;--g3:#444;--g4:#777;--g5:#bbb;--border:#e0ddd8;--border-dark:#ccc;--red:#c0392b;--green:#1a7a3c}
+  :root{--white:#ffffff;--off:#f7f6f4;--black:#0d0d0d;--g1:#1a1a1a;--g2:#333;--g3:#444;--g4:#777;--g5:#bbb;--border:#e0ddd8;--border-dark:#ccc;--red:#c0392b}
   body{background:var(--white);color:var(--black);font-family:'DM Sans',sans-serif;min-height:100vh}
   .container{max-width:600px;margin:0 auto;padding:48px 24px 80px}
 
@@ -76,11 +76,7 @@
   .error-msg{color:var(--red);font-size:12px;margin-top:5px;display:none}
   .error-msg.show{display:block}
 
-  /* ── Supabase diagnostic banner ── */
-  .db-banner{display:none;margin-top:16px;padding:12px 14px;border-radius:4px;font-size:13px;line-height:1.5;font-family:monospace;word-break:break-all;border:1px solid}
-  .db-banner.success{background:#e6f4ec;border-color:#a3d9b1;color:var(--green)}
-  .db-banner.error{background:#fdecea;border-color:#f5b8b3;color:var(--red)}
-  .db-banner.show{display:block}
+
 
   .results-page{display:none}
   .results-page.show{display:block;animation:fadeUp .4s ease}
@@ -268,8 +264,7 @@
     </div>
     <button class="modal-btn" id="submitBtn" onclick="showResults()">SHOW MY NUMBER</button>
 
-    <!-- ── DIAGNOSTIC BANNER (visible in-page, remove after fixing) ── -->
-    <div class="db-banner" id="dbBanner"></div>
+
   </div>
 </div>
 
@@ -320,19 +315,6 @@
     document.getElementById('emailOverlay').classList.add('show');
   }
 
-  // ── Helper: show the diagnostic banner inside the modal ──
-  function showDbBanner(type, message) {
-    const banner = document.getElementById('dbBanner');
-    banner.className = `db-banner ${type} show`;
-    banner.innerHTML = message;
-    // Also log to console for DevTools inspection
-    if (type === 'error') {
-      console.error('[Supabase]', message);
-    } else {
-      console.log('[Supabase]', message);
-    }
-  }
-
   async function showResults(){
     const email=document.getElementById('userEmail').value;
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -343,11 +325,6 @@
     const btn=document.getElementById('submitBtn');
     btn.disabled=true;
     btn.innerHTML='<span class="spinner"></span>LOADING...';
-
-    // Reset banner
-    const banner=document.getElementById('dbBanner');
-    banner.className='db-banner';
-    banner.innerHTML='';
 
     const name=document.getElementById('userName').value;
     const biz=document.getElementById('businessType').value;
@@ -421,24 +398,9 @@
         <div class="gap-box"><p>On the same budget, a better system should be generating <strong>${gapJobs} more jobs</strong> and <strong>$${f(gap)} more in revenue</strong> every single month.</p></div>`;
     }
 
-    // ── SUPABASE SAVE WITH FULL DIAGNOSTICS ──
-    const payload = {
-      first_name: name || null,
-      email: email,
-      business_type: biz,
-      job_value: jobVal,
-      close_rate: Math.round(closeRate * 100),
-      is_running_ads: isAds,
-      ad_spend: adSpendVal,
-      current_leads: currentLeadsVal || null,
-      result_type: resultType,
-      result_amount: resultAmount
-    };
-
-    console.log('[Supabase] Sending payload:', JSON.stringify(payload, null, 2));
-
+    // Save to Supabase (silent — no user-facing feedback)
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/ad_calculator_submissions`, {
+      await fetch(`${SUPABASE_URL}/rest/v1/ad_calculator_submissions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -446,84 +408,29 @@
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          first_name: name || null,
+          email: email,
+          business_type: biz,
+          job_value: jobVal,
+          close_rate: Math.round(closeRate * 100),
+          is_running_ads: isAds,
+          ad_spend: adSpendVal,
+          current_leads: currentLeadsVal || null,
+          result_type: resultType,
+          result_amount: resultAmount
+        })
       });
+    } catch(e) { /* silent */ }
 
-      if (res.ok) {
-        // HTTP 200–299 — row was inserted
-        showDbBanner('success', `✓ Saved to Supabase (HTTP ${res.status})`);
-        // Proceed to results after a short pause so user sees the confirmation
-        setTimeout(() => {
-          document.getElementById('emailOverlay').classList.remove('show');
-          document.getElementById('calcForm').style.display = 'none';
-          document.getElementById('resultsContent').innerHTML = html;
-          document.getElementById('resultsPage').classList.add('show');
-          window.scrollTo({top: 0, behavior: 'smooth'});
-        }, 800);
-      } else {
-        // HTTP 4xx / 5xx — parse the error body
-        let errBody = '';
-        try {
-          const errJson = await res.json();
-          errBody = JSON.stringify(errJson);
-        } catch (_) {
-          errBody = await res.text();
-        }
-        showDbBanner(
-          'error',
-          `✗ Supabase error — HTTP ${res.status}<br><br><strong>Response:</strong> ${errBody}<br><br><strong>Fix:</strong> ${getFixHint(res.status, errBody)}`
-        );
-        btn.disabled = false;
-        btn.innerHTML = 'SHOW MY NUMBER';
-        // Still show results even if save failed
-        setTimeout(() => {
-          document.getElementById('emailOverlay').classList.remove('show');
-          document.getElementById('calcForm').style.display = 'none';
-          document.getElementById('resultsContent').innerHTML = html;
-          document.getElementById('resultsPage').classList.add('show');
-          window.scrollTo({top: 0, behavior: 'smooth'});
-        }, 3000);
-      }
-    } catch (e) {
-      // Pure network / CORS failure
-      showDbBanner(
-        'error',
-        `✗ Network / CORS error — could not reach Supabase.<br><br><strong>Detail:</strong> ${e.message}<br><br><strong>Fix:</strong> Check that your Supabase project is active and the URL is correct. Open DevTools → Network tab for more detail.`
-      );
-      console.error('[Supabase] Network error:', e);
-      btn.disabled = false;
-      btn.innerHTML = 'SHOW MY NUMBER';
-      setTimeout(() => {
-        document.getElementById('emailOverlay').classList.remove('show');
-        document.getElementById('calcForm').style.display = 'none';
-        document.getElementById('resultsContent').innerHTML = html;
-        document.getElementById('resultsPage').classList.add('show');
-        window.scrollTo({top: 0, behavior: 'smooth'});
-      }, 3000);
-    }
+    document.getElementById('emailOverlay').classList.remove('show');
+    document.getElementById('calcForm').style.display = 'none';
+    document.getElementById('resultsContent').innerHTML = html;
+    document.getElementById('resultsPage').classList.add('show');
+    window.scrollTo({top: 0, behavior: 'smooth'});
 
     btn.disabled = false;
     btn.innerHTML = 'SHOW MY NUMBER';
-  }
-
-  // Returns a plain-English fix hint based on status code + body
-  function getFixHint(status, body) {
-    if (status === 401 || status === 403) {
-      return 'Row Level Security (RLS) is blocking the insert. Go to Supabase → Table Editor → ad_calculator_submissions → RLS → Add policy: INSERT for anon role WITH CHECK (true).';
-    }
-    if (status === 404) {
-      return 'Table "ad_calculator_submissions" not found. Check the table name in Supabase — it may be spelled differently.';
-    }
-    if (status === 400) {
-      if (body.includes('column')) {
-        return 'A column name in the payload does not match your table schema. Compare the payload logged in the console with your actual column names in Supabase.';
-      }
-      return 'Bad request — the payload failed schema validation. Check column names and data types.';
-    }
-    if (status >= 500) {
-      return 'Supabase server error. Try again in a moment or check your project status at app.supabase.com.';
-    }
-    return 'Check the Supabase response above and compare it to your table schema.';
   }
 
   function f(n){return Math.round(n).toLocaleString('en-US')}
