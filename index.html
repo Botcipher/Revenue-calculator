@@ -7,22 +7,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--white:#ffffff;--off:#f7f6f4;--black:#0d0d0d;--g1:#1a1a1a;--g2:#333;--g3:#444;--g4:#777;--g5:#bbb;--border:#e0ddd8;--border-dark:#ccc;--red:#c0392b}
+  :root{--white:#ffffff;--off:#f7f6f4;--black:#0d0d0d;--g1:#1a1a1a;--g2:#333;--g3:#444;--g4:#777;--g5:#bbb;--border:#e0ddd8;--border-dark:#ccc;--red:#c0392b;--green:#1a7a3c}
   body{background:var(--white);color:var(--black);font-family:'DM Sans',sans-serif;min-height:100vh}
   .container{max-width:600px;margin:0 auto;padding:48px 24px 80px}
 
-  /* Logo */
   .logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:5px;color:var(--black);margin-bottom:40px;display:block}
 
-  /* Header */
   .header{margin-bottom:40px}
   .header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,9vw,64px);line-height:.95;letter-spacing:1px;margin-bottom:14px;color:var(--black)}
   .header p{color:var(--g3);font-size:16px;font-weight:300;line-height:1.6}
 
-  /* Divider */
   .divider{height:1px;background:var(--border);margin:32px 0}
 
-  /* Field */
   .field{margin-bottom:24px}
   .field-label{font-size:17px;font-weight:500;color:var(--black);margin-bottom:10px;display:block;line-height:1.3}
   select,input[type=email],input[type=text]{width:100%;background:var(--off);border:1px solid var(--border);color:var(--black);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;border-radius:3px;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
@@ -34,7 +30,6 @@
   .field-error-msg{color:var(--red);font-size:13px;margin-top:6px;display:none}
   .field-error-msg.show{display:block}
 
-  /* Slider */
   .slider-field{margin-bottom:32px}
   .slider-field .field-label{margin-bottom:12px}
   .slider-row{display:flex;align-items:center;gap:10px}
@@ -50,24 +45,20 @@
   .slider-labels{display:flex;justify-content:space-between;margin-top:6px;padding:0 50px}
   .slider-labels span{font-size:12px;color:var(--g5)}
 
-  /* Radio */
   .radio-group{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
   .radio-option{position:relative}
   .radio-option input{position:absolute;opacity:0;width:0}
   .radio-option label{display:flex;align-items:center;justify-content:center;padding:14px;background:var(--off);border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:16px;color:var(--g3);transition:all .2s;margin:0;letter-spacing:0}
   .radio-option input:checked+label{border-color:var(--black);color:var(--black);background:var(--white);font-weight:500}
 
-  /* Conditional */
   .conditional{display:none}
   .conditional.show{display:block;animation:fadeUp .3s ease}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-  /* Calc button */
   .calc-btn{width:100%;padding:18px 24px;background:var(--black);color:var(--white);border:none;border-radius:3px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:8px}
   .calc-btn:hover{background:var(--g1)}
   .calc-btn:disabled{background:var(--g4);cursor:not-allowed}
 
-  /* Modal */
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;align-items:center;justify-content:center;padding:24px}
   .overlay.show{display:flex;animation:fadeIn .25s ease}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -85,7 +76,12 @@
   .error-msg{color:var(--red);font-size:12px;margin-top:5px;display:none}
   .error-msg.show{display:block}
 
-  /* Results */
+  /* ── Supabase diagnostic banner ── */
+  .db-banner{display:none;margin-top:16px;padding:12px 14px;border-radius:4px;font-size:13px;line-height:1.5;font-family:monospace;word-break:break-all;border:1px solid}
+  .db-banner.success{background:#e6f4ec;border-color:#a3d9b1;color:var(--green)}
+  .db-banner.error{background:#fdecea;border-color:#f5b8b3;color:var(--red)}
+  .db-banner.show{display:block}
+
   .results-page{display:none}
   .results-page.show{display:block;animation:fadeUp .4s ease}
 
@@ -115,7 +111,6 @@
 
   .disclaimer{font-size:12px;color:var(--g5);text-align:center;line-height:1.6}
 
-  /* Loading spinner */
   .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -134,10 +129,8 @@
     <p>Enter your numbers below and we'll show you the exact figure.</p>
   </div>
 
-  <!-- FORM -->
   <div id="calcForm">
 
-    <!-- Business type -->
     <div class="field">
       <span class="field-label">What type of business do you run?</span>
       <div class="select-wrap">
@@ -165,7 +158,6 @@
 
     <div class="divider"></div>
 
-    <!-- Job value -->
     <div class="slider-field">
       <span class="field-label">Average job value</span>
       <div class="slider-row">
@@ -177,7 +169,6 @@
       <div class="slider-labels"><span>$100</span><span>$50,000</span></div>
     </div>
 
-    <!-- Close rate -->
     <div class="slider-field">
       <span class="field-label">Your close rate (%)</span>
       <div class="slider-row">
@@ -191,7 +182,6 @@
 
     <div class="divider"></div>
 
-    <!-- Running ads -->
     <div class="field">
       <span class="field-label">Are you currently running ads?</span>
       <div class="radio-group">
@@ -207,7 +197,6 @@
       <div class="field-error-msg" id="adsError">Please select an option.</div>
     </div>
 
-    <!-- If NO -->
     <div class="conditional" id="noAdsFields">
       <div class="slider-field">
         <span class="field-label">How much are you willing to spend on ads per month?</span>
@@ -221,7 +210,6 @@
       </div>
     </div>
 
-    <!-- If YES -->
     <div class="conditional" id="yesAdsFields">
       <div class="slider-field">
         <span class="field-label">How much are you spending on ads per month?</span>
@@ -248,7 +236,6 @@
     <button class="calc-btn" onclick="openModal()">CALCULATE MY NUMBER</button>
   </div>
 
-  <!-- RESULTS -->
   <div class="results-page" id="resultsPage">
     <div id="resultsContent"></div>
     <div class="cta-box">
@@ -280,6 +267,9 @@
       <span class="badge">No spam, ever</span>
     </div>
     <button class="modal-btn" id="submitBtn" onclick="showResults()">SHOW MY NUMBER</button>
+
+    <!-- ── DIAGNOSTIC BANNER (visible in-page, remove after fixing) ── -->
+    <div class="db-banner" id="dbBanner"></div>
   </div>
 </div>
 
@@ -330,6 +320,19 @@
     document.getElementById('emailOverlay').classList.add('show');
   }
 
+  // ── Helper: show the diagnostic banner inside the modal ──
+  function showDbBanner(type, message) {
+    const banner = document.getElementById('dbBanner');
+    banner.className = `db-banner ${type} show`;
+    banner.innerHTML = message;
+    // Also log to console for DevTools inspection
+    if (type === 'error') {
+      console.error('[Supabase]', message);
+    } else {
+      console.log('[Supabase]', message);
+    }
+  }
+
   async function showResults(){
     const email=document.getElementById('userEmail').value;
     if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
@@ -340,6 +343,11 @@
     const btn=document.getElementById('submitBtn');
     btn.disabled=true;
     btn.innerHTML='<span class="spinner"></span>LOADING...';
+
+    // Reset banner
+    const banner=document.getElementById('dbBanner');
+    banner.className='db-banner';
+    banner.innerHTML='';
 
     const name=document.getElementById('userName').value;
     const biz=document.getElementById('businessType').value;
@@ -413,39 +421,109 @@
         <div class="gap-box"><p>On the same budget, a better system should be generating <strong>${gapJobs} more jobs</strong> and <strong>$${f(gap)} more in revenue</strong> every single month.</p></div>`;
     }
 
-    // Save to Supabase
+    // ── SUPABASE SAVE WITH FULL DIAGNOSTICS ──
+    const payload = {
+      first_name: name || null,
+      email: email,
+      business_type: biz,
+      job_value: jobVal,
+      close_rate: Math.round(closeRate * 100),
+      is_running_ads: isAds,
+      ad_spend: adSpendVal,
+      current_leads: currentLeadsVal || null,
+      result_type: resultType,
+      result_amount: resultAmount
+    };
+
+    console.log('[Supabase] Sending payload:', JSON.stringify(payload, null, 2));
+
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/ad_calculator_submissions`,{
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'apikey':SUPABASE_KEY,
-          'Authorization':`Bearer ${SUPABASE_KEY}`,
-          'Prefer':'return=minimal'
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/ad_calculator_submissions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Prefer': 'return=minimal'
         },
-        body:JSON.stringify({
-          first_name:name||null,
-          email:email,
-          business_type:biz,
-          job_value:jobVal,
-          close_rate:Math.round(closeRate*100),
-          is_running_ads:isAds,
-          ad_spend:adSpendVal,
-          current_leads:currentLeadsVal||null,
-          result_type:resultType,
-          result_amount:resultAmount
-        })
+        body: JSON.stringify(payload)
       });
-    } catch(e){ console.log('Supabase error:',e); }
 
-    document.getElementById('emailOverlay').classList.remove('show');
-    document.getElementById('calcForm').style.display='none';
-    document.getElementById('resultsContent').innerHTML=html;
-    document.getElementById('resultsPage').classList.add('show');
-    window.scrollTo({top:0,behavior:'smooth'});
+      if (res.ok) {
+        // HTTP 200–299 — row was inserted
+        showDbBanner('success', `✓ Saved to Supabase (HTTP ${res.status})`);
+        // Proceed to results after a short pause so user sees the confirmation
+        setTimeout(() => {
+          document.getElementById('emailOverlay').classList.remove('show');
+          document.getElementById('calcForm').style.display = 'none';
+          document.getElementById('resultsContent').innerHTML = html;
+          document.getElementById('resultsPage').classList.add('show');
+          window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 800);
+      } else {
+        // HTTP 4xx / 5xx — parse the error body
+        let errBody = '';
+        try {
+          const errJson = await res.json();
+          errBody = JSON.stringify(errJson);
+        } catch (_) {
+          errBody = await res.text();
+        }
+        showDbBanner(
+          'error',
+          `✗ Supabase error — HTTP ${res.status}<br><br><strong>Response:</strong> ${errBody}<br><br><strong>Fix:</strong> ${getFixHint(res.status, errBody)}`
+        );
+        btn.disabled = false;
+        btn.innerHTML = 'SHOW MY NUMBER';
+        // Still show results even if save failed
+        setTimeout(() => {
+          document.getElementById('emailOverlay').classList.remove('show');
+          document.getElementById('calcForm').style.display = 'none';
+          document.getElementById('resultsContent').innerHTML = html;
+          document.getElementById('resultsPage').classList.add('show');
+          window.scrollTo({top: 0, behavior: 'smooth'});
+        }, 3000);
+      }
+    } catch (e) {
+      // Pure network / CORS failure
+      showDbBanner(
+        'error',
+        `✗ Network / CORS error — could not reach Supabase.<br><br><strong>Detail:</strong> ${e.message}<br><br><strong>Fix:</strong> Check that your Supabase project is active and the URL is correct. Open DevTools → Network tab for more detail.`
+      );
+      console.error('[Supabase] Network error:', e);
+      btn.disabled = false;
+      btn.innerHTML = 'SHOW MY NUMBER';
+      setTimeout(() => {
+        document.getElementById('emailOverlay').classList.remove('show');
+        document.getElementById('calcForm').style.display = 'none';
+        document.getElementById('resultsContent').innerHTML = html;
+        document.getElementById('resultsPage').classList.add('show');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      }, 3000);
+    }
 
-    btn.disabled=false;
-    btn.innerHTML='SHOW MY NUMBER';
+    btn.disabled = false;
+    btn.innerHTML = 'SHOW MY NUMBER';
+  }
+
+  // Returns a plain-English fix hint based on status code + body
+  function getFixHint(status, body) {
+    if (status === 401 || status === 403) {
+      return 'Row Level Security (RLS) is blocking the insert. Go to Supabase → Table Editor → ad_calculator_submissions → RLS → Add policy: INSERT for anon role WITH CHECK (true).';
+    }
+    if (status === 404) {
+      return 'Table "ad_calculator_submissions" not found. Check the table name in Supabase — it may be spelled differently.';
+    }
+    if (status === 400) {
+      if (body.includes('column')) {
+        return 'A column name in the payload does not match your table schema. Compare the payload logged in the console with your actual column names in Supabase.';
+      }
+      return 'Bad request — the payload failed schema validation. Check column names and data types.';
+    }
+    if (status >= 500) {
+      return 'Supabase server error. Try again in a moment or check your project status at app.supabase.com.';
+    }
+    return 'Check the Supabase response above and compare it to your table schema.';
   }
 
   function f(n){return Math.round(n).toLocaleString('en-US')}
