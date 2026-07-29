@@ -272,6 +272,23 @@
   const SUPABASE_URL = 'https://tcqfhdevbmizeenqreoc.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjcWZoZGV2Ym1pemVlbnFyZW9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzI3ODksImV4cCI6MjA4NjEwODc4OX0.F3DfuxkjtUQBgUtQfE3BLovOrL44G91H_44Ei8YGLIw';
 
+  // The main app's /track/calculator redirect forwards who actually clicked
+  // the email link as URL params — cid / campaign_id / send_id / email.
+  // We carry these straight through into the submission row below, so a
+  // visitor typing a different name/email into the form doesn't sever the
+  // link back to who they really are. All optional/nullable if someone
+  // opens this page directly without coming from an email.
+  const _qp=new URLSearchParams(window.location.search);
+  const TRACK_CONTACT_ID=_qp.get('cid')||null;
+  const TRACK_CAMPAIGN_ID=_qp.get('campaign_id')||null;
+  const TRACK_SEND_ID=_qp.get('send_id')||null;
+  const TRACK_ORIGINAL_EMAIL=_qp.get('email')||null;
+
+  // Base URL of the campaign app — used only to fire the branch-trigger call
+  // below (sequence switching), so a contact who engages with this calculator
+  // moves onto a different email track. Update if the app's domain changes.
+  const APP_URL='https://gfcjvjckxz-production.up.railway.app';
+
   const CPL={HVAC:90,Roofing:120,Plumbing:75,Electrical:55,['Concrete Contractor']:70,['Junk Removal']:25,['Moving Company']:40,Painters:60,Hardscaping:70,Irrigation:60,['Tree Removal']:55,['Legal Services']:105,['Medical / Dental']:80,['Real Estate']:35,['Other Service Business']:60};
 
   function fromSlider(sId,iId){document.getElementById(iId).value=document.getElementById(sId).value}
@@ -418,10 +435,34 @@
           ad_spend: adSpendVal,
           current_leads: currentLeadsVal || null,
           result_type: resultType,
-          result_amount: resultAmount
+          result_amount: resultAmount,
+          // Identity carried through from the original email link — may
+          // differ from the name/email typed above if the visitor entered
+          // different details.
+          contact_id: TRACK_CONTACT_ID,
+          campaign_id: TRACK_CAMPAIGN_ID,
+          send_id: TRACK_SEND_ID,
+          original_email: TRACK_ORIGINAL_EMAIL
         })
       });
     } catch(e) { /* silent */ }
+
+    // Tell the campaign app this contact engaged with the calculator, so it
+    // can switch them onto a different (warmer) email track. Fire-and-forget:
+    // never blocks showing the results, and failure here just means the
+    // track switch doesn't happen — nothing else about this page breaks.
+    if (TRACK_CONTACT_ID && TRACK_CAMPAIGN_ID) {
+      fetch(`${APP_URL}/api/branch/trigger`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_id: TRACK_CONTACT_ID,
+          campaign_id: TRACK_CAMPAIGN_ID,
+          trigger_type: 'calculator_submit',
+          trigger_meta: {}
+        })
+      }).catch(()=>{});
+    }
 
     document.getElementById('emailOverlay').classList.remove('show');
     document.getElementById('calcForm').style.display = 'none';
